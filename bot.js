@@ -3,7 +3,7 @@ const express = require("express");
 const fs = require("fs-extra");
 
 const TOKEN = process.env.DISCORD_BOT_TOKEN;  // Используем переменную окружения
-const CHANNEL_ID = "YOUR_CHANNEL_ID";
+const CHANNEL_ID = "1344356587682140170";
 const MESSAGE_ID_FILE = "data.json"; // Файл для хранения ID закрепленного сообщения
 
 const app = express();
