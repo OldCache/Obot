@@ -2,9 +2,8 @@ const { Client, GatewayIntentBits } = require("discord.js");
 const express = require("express");
 const fs = require("fs-extra");
 
-// Используем переменные окружения
-const TOKEN = process.env.DISCORD_BOT_TOKEN;  // Токен Discord из переменных окружения
-const CHANNEL_ID = process.env.DISCORD_CHANNEL_ID;  // ID канала из переменных окружения
+const TOKEN = process.env.DISCORD_BOT_TOKEN;  // Токен из переменной окружения
+const CHANNEL_ID = process.env.DISCORD_CHANNEL_ID;  // ID канала из переменной окружения
 const MESSAGE_ID_FILE = "data.json"; // Файл для хранения ID закрепленного сообщения
 
 const app = express();
@@ -65,5 +64,6 @@ bot.once("ready", async () => {
   await updatePinnedMessage(channel);
 });
 
-bot.login(TOKEN);
+bot.login(`Bot ${TOKEN}`);  // Токен с префиксом "Bot"
 app.listen(3000, () => console.log("🚀 API запущено на порту 3000"));
+
