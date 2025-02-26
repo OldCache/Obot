@@ -2,7 +2,7 @@ const { Client, GatewayIntentBits } = require("discord.js");
 const express = require("express");
 const fs = require("fs-extra");
 
-const TOKEN = "YOUR_DISCORD_BOT_TOKEN";
+const TOKEN = process.env.DISCORD_BOT_TOKEN;  // Используем переменную окружения
 const CHANNEL_ID = "YOUR_CHANNEL_ID";
 const MESSAGE_ID_FILE = "data.json"; // Файл для хранения ID закрепленного сообщения
 
@@ -28,6 +28,7 @@ function loadMessageId() {
 function saveMessageId(id) {
   fs.writeJsonSync(MESSAGE_ID_FILE, { messageId: id });
 }
+
 // Функция для обновления закрепленного сообщения
 async function updatePinnedMessage(channel) {
   let messages = await channel.messages.fetch({ limit: 10 });
