@@ -61,11 +61,20 @@ async function updatePinnedMessage(channel) {
 
 // API для получения данных от расширения
 app.post("/update", async (req, res) => {
+  console.log("📩 Получены данные:", req.body); // Логирование полученных данных
+  
   lastData = req.body;
-  const channel = await bot.channels.fetch(CHANNEL_ID);
-  await updatePinnedMessage(channel);
-  res.sendStatus(200);
+
+  try {
+    let channel = await bot.channels.fetch(CHANNEL_ID);
+    await updatePinnedMessage(channel);
+    res.sendStatus(200);
+  } catch (error) {
+    console.error("❌ Ошибка при обновлении сообщения:", error);
+    res.sendStatus(500);
+  }
 });
+
 
 // Запуск бота
 bot.once("ready", async () => {
