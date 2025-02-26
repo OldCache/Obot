@@ -10,8 +10,13 @@ const app = express();
 app.use(express.json());
 
 const bot = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent // Если ты планируешь получать контент сообщений
+  ]
 });
+
 
 let lastData = { username: "Неизвестно", profit: "0" };
 
