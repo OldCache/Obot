@@ -33,26 +33,23 @@ function saveMessageId(id) {
   fs.writeJsonSync(MESSAGE_ID_FILE, { messageId: id });
 }
 
-// Функция для удаления последнего закрепленного сообщения
-async function deleteLastPinnedMessage(channel) {
-  const lastMessageId = loadMessageId();
-  if (lastMessageId) {
-    try {
-      const message = await channel.messages.fetch(lastMessageId);
-      if (message) {
-        await message.unpin();
-        await message.delete();
-        console.log("🗑️ Удалено предыдущее закрепленное сообщение.");
-      }
-    } catch (error) {
-      console.error("Ошибка при удалении сообщения:", error.message);
+// Функция для удаления ВСЕХ закрепленных сообщений
+async function deleteAllPinnedMessages(channel) {
+  try {
+    const pinnedMessages = await channel.messages.fetchPinned();
+    for (const message of pinnedMessages.values()) {
+      await message.unpin();
+      await message.delete();
+      console.log(`🗑️ Удалено закрепленное сообщение: ${message.id}`);
     }
+  } catch (error) {
+    console.error("Ошибка при удалении закрепленных сообщений:", error.message);
   }
 }
 
 // Функция для обновления закрепленного сообщения
 async function updatePinnedMessage(channel) {
-  await deleteLastPinnedMessage(channel); // Удаляем предыдущее сообщение
+  await deleteAllPinnedMessages(channel); // Удаляем ВСЕ закрепленные сообщения
 
   const content = `**${lastData.username}** – 💰 ${lastData.profit} ₽`;
   const newMessage = await channel.send(content);
