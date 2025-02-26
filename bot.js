@@ -2,9 +2,9 @@ const { Client, GatewayIntentBits } = require("discord.js");
 const express = require("express");
 const fs = require("fs-extra");
 
-const TOKEN = process.env.DISCORD_BOT_TOKEN;  // Токен из переменной окружения
-const CHANNEL_ID = process.env.DISCORD_CHANNEL_ID;  // ID канала из переменной окружения
-const MESSAGE_ID_FILE = "data.json"; // Файл для хранения ID закрепленного сообщения
+const TOKEN = process.env.DISCORD_BOT_TOKEN;
+const CHANNEL_ID = process.env.DISCORD_CHANNEL_ID;
+const MESSAGE_ID_FILE = "data.json";
 
 const app = express();
 app.use(express.json());
@@ -13,13 +13,13 @@ const bot = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent // Если ты планируешь получать контент сообщений
+    GatewayIntentBits.MessageContent
   ]
 });
 
 let lastData = { username: "Неизвестно", profit: "0" };
 
-// Функция для загрузки ID закрепленного сообщения
+// Функция для загрузки ID последнего закрепленного сообщения
 function loadMessageId() {
   try {
     return fs.readJsonSync(MESSAGE_ID_FILE).messageId || null;
@@ -33,37 +33,49 @@ function saveMessageId(id) {
   fs.writeJsonSync(MESSAGE_ID_FILE, { messageId: id });
 }
 
+// Функция для удаления последнего закрепленного сообщения
+async function deleteLastPinnedMessage(channel) {
+  const lastMessageId = loadMessageId();
+  if (lastMessageId) {
+    try {
+      const message = await channel.messages.fetch(lastMessageId);
+      if (message) {
+        await message.unpin();
+        await message.delete();
+        console.log("🗑️ Удалено предыдущее закрепленное сообщение.");
+      }
+    } catch (error) {
+      console.error("Ошибка при удалении сообщения:", error.message);
+    }
+  }
+}
+
 // Функция для обновления закрепленного сообщения
 async function updatePinnedMessage(channel) {
-  let messages = await channel.messages.fetch({ limit: 10 });
-  let pinnedMessage = messages.get(loadMessageId()); // Получаем ID закрепленного сообщения
+  await deleteLastPinnedMessage(channel); // Удаляем предыдущее сообщение
 
-  let content = `**${lastData.username}** – 💰 ${lastData.profit} ₽`;
+  const content = `**${lastData.username}** – 💰 ${lastData.profit} ₽`;
+  const newMessage = await channel.send(content);
+  await newMessage.pin();
+  saveMessageId(newMessage.id);
 
-  if (pinnedMessage) {
-    await pinnedMessage.edit(content);
-  } else {
-    let newMessage = await channel.send(content);
-    await newMessage.pin();
-    saveMessageId(newMessage.id); // Сохраняем ID закрепленного сообщения
-  }
+  console.log("📌 Новое сообщение закреплено:", newMessage.id);
 }
 
 // API для получения данных от расширения
 app.post("/update", async (req, res) => {
   lastData = req.body;
-  let channel = await bot.channels.fetch(CHANNEL_ID);
+  const channel = await bot.channels.fetch(CHANNEL_ID);
   await updatePinnedMessage(channel);
   res.sendStatus(200);
 });
 
-// Запускаем бота
+// Запуск бота
 bot.once("ready", async () => {
   console.log(`✅ Бот запущен как ${bot.user.tag}`);
-  let channel = await bot.channels.fetch(CHANNEL_ID);
+  const channel = await bot.channels.fetch(CHANNEL_ID);
   await updatePinnedMessage(channel);
 });
 
-bot.login(`Bot ${TOKEN}`);  // Токен с префиксом "Bot"
+bot.login(TOKEN);
 app.listen(3000, () => console.log("🚀 API запущено на порту 3000"));
-
