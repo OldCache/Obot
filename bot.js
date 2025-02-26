@@ -46,6 +46,12 @@ async function deletePreviousPinnedMessages(channel) {
       deleteCount++;
     }
   }
+
+  // Удаляем сообщение о закреплении, если оно есть (по содержимому)
+  let notifyMessage = messages.find(msg => msg.content.includes("закрепляет сообщение"));
+  if (notifyMessage) {
+    await notifyMessage.delete();
+  }
 }
 
 // Функция для обновления закрепленного сообщения
