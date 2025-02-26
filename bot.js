@@ -33,7 +33,7 @@ function saveMessageId(id) {
   fs.writeJsonSync(MESSAGE_ID_FILE, { messageId: id });
 }
 
-// Функция для удаления предыдущего закрепленного сообщения
+// Функция для удаления предыдущего закрепленного сообщения и уведомлений
 async function deletePreviousPinnedMessages(channel) {
   let messages = await channel.messages.fetch({ limit: 10 });
   let pinnedMessages = messages.filter(msg => msg.pinned);
