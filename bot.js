@@ -33,30 +33,19 @@ function saveMessageId(id) {
   fs.writeJsonSync(MESSAGE_ID_FILE, { messageId: id });
 }
 
-// Функция для удаления предыдущего закрепленного сообщения и уведомлений
-async function deletePreviousPinnedMessages(channel) {
-  let messages = await channel.messages.fetch({ limit: 10 });
-  let pinnedMessages = messages.filter(msg => msg.pinned);
-  
-  // Удаляем два закрепленных сообщения (если они есть)
-  let deleteCount = 0;
-  for (let msg of pinnedMessages.values()) {
-    if (deleteCount < 2) {
-      await msg.delete();
-      deleteCount++;
-    }
-  }
+// Функция для удаления системных сообщений (например, сообщений о закреплении)
+async function delete_system_messages(channel) {
+  let messages = await channel.messages.fetch({ limit: 100 }); // Получаем последние 100 сообщений
+  let systemMessages = messages.filter(msg => msg.author.bot || msg.system);
 
-  // Удаляем сообщение о закреплении, если оно есть (по содержимому)
-  let notifyMessage = messages.find(msg => msg.content.includes("закрепляет сообщение"));
-  if (notifyMessage) {
-    await notifyMessage.delete();
+  for (let msg of systemMessages.values()) {
+    await msg.delete(); // Удаляем все системные сообщения и сообщения от бота
   }
 }
 
 // Функция для обновления закрепленного сообщения
 async function updatePinnedMessage(channel) {
-  await deletePreviousPinnedMessages(channel); // Удаляем два предыдущих закрепленных сообщения
+  await delete_system_messages(channel); // Удаляем все системные сообщения
 
   let content = `**${lastData.username}** – 💰 ${lastData.profit} ₽`;
 
