@@ -7,7 +7,7 @@ const CHANNEL_ID = process.env.DISCORD_CHANNEL_ID; // ID Discord-канала
 const CORS_ORIGIN = process.env.CORS_ORIGIN || "*"; // CORS из переменных окружения
 
 const app = express();
-app.use(express.json());
+app.use(express.json()); // Чтобы сервер принимал JSON-формат
 
 const bot = new Client({
   intents: [
@@ -67,16 +67,24 @@ async function updatePinnedMessage(channel) {
 
 // API для получения данных от расширения
 app.post("/update", async (req, res) => {
-  lastData = req.body;
-  let channel = await bot.channels.fetch(CHANNEL_ID);
-  await updatePinnedMessage(channel);
+  // Обновляем данные с полученной информации
+  if (req.body.username && req.body.profit) {
+    lastData = req.body; // Получаем данные от расширения
+    let channel = await bot.channels.fetch(CHANNEL_ID);
+    await updatePinnedMessage(channel);
+    
+    console.log(`Получены данные: ${JSON.stringify(lastData)}`);
 
-  // ✅ CORS
-  res.setHeader("Access-Control-Allow-Origin", CORS_ORIGIN);
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    // ✅ CORS
+    res.setHeader("Access-Control-Allow-Origin", CORS_ORIGIN);
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  res.sendStatus(200);
+    res.sendStatus(200);
+  } else {
+    // Если данных нет, возвращаем ошибку
+    res.status(400).send("Ошибка: недостаточно данных.");
+  }
 });
 
 // Обрабатываем preflight-запросы
